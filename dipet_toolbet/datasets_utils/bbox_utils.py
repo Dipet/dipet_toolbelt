@@ -9,64 +9,6 @@ SUPPORTED_FORMATS = [
 ]
 
 
-def normalize_bbox(bbox, height, width):
-    """Normalize coordinates of a bounding box. Divide x-coordinates by image width and y-coordinates
-    by image height.
-
-    Args:
-        bbox (list): Denormalized bounding box `(x_min, y_min, x_max, y_max)`.
-        height (int): Image height.
-        width (int): Image width.
-
-    Returns:
-        list: Normalized bounding box `(x_min, y_min, x_max, y_max)`.
-
-    Raises:
-        ValueError: If height or width is less or equal zero
-
-    """
-    (x_min, y_min, x_max, y_max), tail = bbox[:4], bbox[4:]
-
-    if height <= 0:
-        raise ValueError("Argument height must be positive integer")
-    if width <= 0:
-        raise ValueError("Argument width must be positive integer")
-
-    x_min, x_max = x_min / width, x_max / width
-    y_min, y_max = y_min / height, y_max / height
-
-    return [x_min, y_min, x_max, y_max] + list(tail)
-
-
-def denormalize_bbox(bbox, height, width):
-    """Denormalize coordinates of a bounding box. Multiply x-coordinates by image width and y-coordinates
-    by image height. This is an inverse operation for `normalize_bbox`.
-
-    Args:
-        bbox (list): Normalized bounding box `(x_min, y_min, x_max, y_max)`.
-        height (int): Image height.
-        width (int): Image width.
-
-    Returns:
-        list: Denormalized bounding box `(x_min, y_min, x_max, y_max)`.
-
-    Raises:
-        ValueError: If rows or cols is less or equal zero
-
-    """
-    (x_min, y_min, x_max, y_max), tail = bbox[:4], bbox[4:]
-
-    if height <= 0:
-        raise ValueError("Argument height must be positive integer")
-    if width <= 0:
-        raise ValueError("Argument width must be positive integer")
-
-    x_min, x_max = x_min * width, x_max * width
-    y_min, y_max = y_min * height, y_max * height
-
-    return (x_min, y_min, x_max, y_max) + list(tail)
-
-
 def convert_bbox(bbox, src_format, dst_format='xyxy', height=None, width=None):
     if src_format == dst_format:
         return bbox
@@ -102,3 +44,46 @@ def convert_bbox(bbox, src_format, dst_format='xyxy', height=None, width=None):
         return normalize_bbox([x, y, width, height] + list(tail), height, width)
 
     raise ValueError(f'Unsupported dst format: {dst_format}')
+
+
+def normalize_bbox(bbox, height, width, format='xyxy'):
+    bbox = convert_bbox(bbox, format)
+    (x_min, y_min, x_max, y_max), tail = bbox[:4], bbox[4:]
+
+    if height <= 0:
+        raise ValueError("Argument height must be positive integer")
+    if width <= 0:
+        raise ValueError("Argument width must be positive integer")
+
+    x_min, x_max = x_min / width, x_max / width
+    y_min, y_max = y_min / height, y_max / height
+
+    bbox = [x_min, y_min, x_max, y_max] + list(tail)
+
+    return convert_bbox(bbox, 'xyxy', format)
+
+
+def denormalize_bbox(bbox, height, width, format='xyxy'):
+    bbox = convert_bbox(bbox, format)
+    (x_min, y_min, x_max, y_max), tail = bbox[:4], bbox[4:]
+
+    if height <= 0:
+        raise ValueError("Argument height must be positive integer")
+    if width <= 0:
+        raise ValueError("Argument width must be positive integer")
+
+    x_min, x_max = x_min * width, x_max * width
+    y_min, y_max = y_min * height, y_max * height
+
+    bbox = [x_min, y_min, x_max, y_max] + list(tail)
+    return convert_bbox(bbox, 'xyxy', format)
+
+
+def convert_bboxes(bboxes, src_format, dst_format='xyxy', height=None, width=None):
+    return [convert_bbox(bbox, src_format, dst_format, height, width) for bbox in bboxes]
+
+
+def resize_bbox(bbox, h, w, new_h, new_w, format='xyxy'):
+    bbox = normalize_bbox(bbox, h, w, format=format)
+    return denormalize_bbox(bbox, new_h, new_w, format=format)
+
