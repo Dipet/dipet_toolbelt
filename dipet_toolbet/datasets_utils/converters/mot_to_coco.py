@@ -1,12 +1,11 @@
-import xml.etree.ElementTree as ET
-
+import pandas as pd
 from pathlib import Path
 
 from dipet_toolbet.datasets_utils.bbox_utils import convert_bbox
 from tqdm import tqdm
 
 
-class VocToCoco:
+class MotToCoco:
     def __init__(self):
         self.cat_id = 0
         self.anno_id = 0
@@ -169,7 +168,7 @@ class VocToCoco:
 
 def parse_voc_to_coco(path, silent=False):
     path = Path(path)
-    dataset = VocToCoco()
+    dataset = VOC2COCO()
 
     if path.is_dir():
         dataset.parse_dir(path, silent)
@@ -186,5 +185,5 @@ def parse_pascal_to_coco(path, silent=False):
 __all__ = [
     'parse_voc_to_coco',
     'parse_pascal_to_coco',
-    'VocToCoco',
+    'VOC2COCO',
 ]

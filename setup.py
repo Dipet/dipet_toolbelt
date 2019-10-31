@@ -7,6 +7,7 @@ from pkg_resources import DistributionNotFound, get_distribution
 
 INSTALL_REQUIRES = [
     'tqdm',
+    'pandas'
 ]
 CHOOSE_INSTALL_REQUIRES = []
 
