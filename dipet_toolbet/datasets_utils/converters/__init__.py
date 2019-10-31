@@ -1,1 +1,1 @@
-from .coco import *
+from .voc_to_coco import *
