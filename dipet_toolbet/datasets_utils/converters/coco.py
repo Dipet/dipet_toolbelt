@@ -3,6 +3,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 from dipet_toolbet.datasets_utils.bbox_utils import convert_bbox
+from tqdm import tqdm
 
 
 class VOC2COCO:
@@ -42,7 +43,7 @@ class VOC2COCO:
         if name in self.cat_names:
             return self.cat_names[name]
 
-        cat_id = self._next_cat_id(),
+        cat_id = self._next_cat_id()
 
         category_item = {
             'supercategory': 'None',
@@ -155,27 +156,31 @@ class VOC2COCO:
 
         self.parse_xml(root)
 
-    def parse_dir(self, directory):
+    def parse_dir(self, directory, silent=False):
         directory = Path(directory)
 
-        for xml_path in directory.glob('*.xml'):
+        if silent:
+            data = directory.glob('*.xml')
+        else:
+            data = tqdm(list(directory.glob('*.xml')))
+        for xml_path in data:
             self.parse_file(xml_path)
 
 
-def parse_voc_to_coco(path):
+def parse_voc_to_coco(path, silent=False):
     path = Path(path)
     dataset = VOC2COCO()
 
     if path.is_dir():
-        dataset.parse_dir(path)
+        dataset.parse_dir(path, silent)
     else:
         dataset.parse_file(path)
 
     return dataset.dataset
 
 
-def parse_pascal_to_coco(path):
-    return parse_voc_to_coco(path)
+def parse_pascal_to_coco(path, silent=False):
+    return parse_voc_to_coco(path, silent)
 
 
 __all__ = [
