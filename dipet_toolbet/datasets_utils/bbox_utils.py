@@ -36,12 +36,11 @@ def convert_bbox(bbox, src_format, dst_format='xyxy', height=None, width=None):
         return [x1, y1, x2, y2] + list(tail)
     elif dst_format in ['yolo', 'xywh_normalized']:
         assert height and width, f'height and width must be >= 1 when dst_format={src_format}'
-        (x1, y1, x2, y2), tail = bbox[:4], bbox[4:]
         x = (x1 + x2) / 2 - 1
         y = (y1 + y2) / 2 - 1
-        width = x2 - x1
-        height = y2 - y1
-        return normalize_bbox([x, y, width, height] + list(tail), height, width)
+        w = x2 - x1
+        h = y2 - y1
+        return normalize_bbox([x, y, w, h] + list(tail), height, width)
 
     raise ValueError(f'Unsupported dst format: {dst_format}')
 
@@ -86,4 +85,11 @@ def convert_bboxes(bboxes, src_format, dst_format='xyxy', height=None, width=Non
 def resize_bbox(bbox, h, w, new_h, new_w, format='xyxy'):
     bbox = normalize_bbox(bbox, h, w, format=format)
     return denormalize_bbox(bbox, new_h, new_w, format=format)
+
+
+def scale_bbox(bbox, scale, format='xyxy'):
+    bbox = convert_bbox(bbox, format)
+    bbox, tail = bbox[:4], bbox[4:]
+    bbox = [i * scale for i in bbox]
+    return convert_bbox(bbox + tail, 'xyxy', format)
 
